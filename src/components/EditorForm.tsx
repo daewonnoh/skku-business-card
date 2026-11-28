@@ -956,7 +956,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({
             Tel ({ko ? '전화' : 'Office'})
           </label>
           <input
-            type="text"
+            type="tel"
+            inputMode="tel"
             className="input"
             placeholder="02-760-0100"
             value={data.tel}
@@ -975,7 +976,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({
             Mobile ({ko ? '휴대폰' : 'Cell'})
           </label>
           <input
-            type="text"
+            type="tel"
+            inputMode="tel"
             className="input"
             placeholder="010-1234-5678"
             value={data.mobile}
@@ -1013,7 +1015,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({
             Fax
           </label>
           <input
-            type="text"
+            type="tel"
+            inputMode="tel"
             className="input"
             placeholder="02-760-0101"
             value={data.fax}
@@ -1032,7 +1035,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({
             Web / Link
           </label>
           <input
-            type="text"
+            type="url"
+            inputMode="url"
             className="input"
             placeholder="https://www.skku.edu"
             value={data.web}
@@ -1101,7 +1105,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({
               <input
                 ref={regularFontRef}
                 type="file"
-                accept=".ttf,.otf"
+                accept=".ttf,.otf,font/ttf,font/otf,application/octet-stream"
                 style={{ display: 'none' }}
                 onChange={(e) => {
                   const f = e.target.files?.[0]
@@ -1143,7 +1147,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({
               <input
                 ref={boldFontRef}
                 type="file"
-                accept=".ttf,.otf"
+                accept=".ttf,.otf,font/ttf,font/otf,application/octet-stream"
                 style={{ display: 'none' }}
                 onChange={(e) => {
                   const f = e.target.files?.[0]

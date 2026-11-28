@@ -94,32 +94,77 @@ export async function exportCardPdf(
   const useSerif = data.fontStyle === 'serif'
   const useCustom = data.fontStyle === 'custom' && customFonts.regular !== null
 
-  const regBytes = useCustom
-    ? customFonts.regular!.bytes
-    : await fetchBinary(
-        useSerif ? './fonts/GowunBatang-Regular.ttf' : './fonts/Pretendard-Regular.ttf'
-      )
+  let needsRegular = false
+  let needsMedium = false
+  let needsBold = false
+  let needsSerifRole = false
+  for (const side of sides) {
+    for (const op of side.ops) {
+      if (op.type !== 'text') continue
+      if (op.fontRole === 'serif') needsSerifRole = true
+      else if (op.weight === 'bold') needsBold = true
+      else if (op.weight === 'medium') needsMedium = true
+      else needsRegular = true
+    }
+  }
 
-  const medBytes = useCustom
-    ? (customFonts.bold?.bytes ?? customFonts.regular!.bytes)
-    : await fetchBinary(
-        useSerif ? './fonts/GowunBatang-Regular.ttf' : './fonts/Pretendard-Medium.ttf'
-      )
+  const regBytes =
+    needsRegular || useSerif || (!needsMedium && !needsBold)
+      ? useCustom
+        ? customFonts.regular!.bytes
+        : await fetchBinary(
+            useSerif ? './fonts/GowunBatang-Regular.ttf' : './fonts/Pretendard-Regular.ttf'
+          )
+      : null
 
-  const boldBytes = useCustom
-    ? (customFonts.bold?.bytes ?? customFonts.regular!.bytes)
-    : await fetchBinary(
-        useSerif ? './fonts/GowunBatang-Bold.ttf' : './fonts/Pretendard-Bold.ttf'
-      )
+  const fontRegular = regBytes ? await embedFontSafe(regBytes) : null
 
-  const serifBytes = await fetchBinary('./fonts/GowunBatang-Regular.ttf')
-  const hanjaFallbackBytes = await fetchBinary('./fonts/Pretendard-Bold.ttf')
+  const medBytes = needsMedium
+    ? useCustom
+      ? (customFonts.bold?.bytes ?? customFonts.regular!.bytes)
+      : await fetchBinary(
+          useSerif ? './fonts/GowunBatang-Regular.ttf' : './fonts/Pretendard-Medium.ttf'
+        )
+    : null
 
-  const fontRegular = await embedFontSafe(regBytes)
-  const fontMedium = useCustom && !customFonts.bold ? fontRegular : await embedFontSafe(medBytes)
-  const fontBold = useCustom && !customFonts.bold ? fontRegular : await embedFontSafe(boldBytes)
-  const fontSerif = useSerif ? fontRegular : await embedFontSafe(serifBytes)
-  const fontHanjaFallback = !useSerif && !useCustom ? fontBold : await embedFontSafe(hanjaFallbackBytes)
+  const boldBytes = needsBold
+    ? useCustom
+      ? (customFonts.bold?.bytes ?? customFonts.regular!.bytes)
+      : await fetchBinary(
+          useSerif ? './fonts/GowunBatang-Bold.ttf' : './fonts/Pretendard-Bold.ttf'
+        )
+    : null
+
+  const fontMedium =
+    medBytes === regBytes && fontRegular
+      ? fontRegular
+      : medBytes
+      ? await embedFontSafe(medBytes)
+      : fontRegular!
+
+  const fontBold =
+    boldBytes === regBytes && fontRegular
+      ? fontRegular
+      : boldBytes
+      ? await embedFontSafe(boldBytes)
+      : fontRegular!
+
+  const fontSerif = needsSerifRole
+    ? useSerif && fontRegular
+      ? fontRegular
+      : await embedFontSafe(await fetchBinary('./fonts/GowunBatang-Regular.ttf'))
+    : fontRegular!
+
+  let fontHanjaFallback: Awaited<ReturnType<typeof embedFontSafe>> | null = null
+  const getHanjaFallback = async () => {
+    if (fontHanjaFallback) return fontHanjaFallback
+    if (!useSerif && !useCustom && boldBytes) {
+      fontHanjaFallback = fontBold
+    } else {
+      fontHanjaFallback = await embedFontSafe(await fetchBinary('./fonts/Pretendard-Bold.ttf'))
+    }
+    return fontHanjaFallback
+  }
 
   const hasAllGlyphs = (font: typeof fontRegular, text: string): boolean => {
     try {
@@ -250,8 +295,10 @@ export async function exportCardPdf(
             ? fontBold
             : op.weight === 'medium'
             ? fontMedium
-            : fontRegular
-        const font = hasAllGlyphs(preferredFont, op.text) ? preferredFont : fontHanjaFallback
+            : fontRegular!
+        const font = hasAllGlyphs(preferredFont, op.text)
+          ? preferredFont
+          : await getHanjaFallback()
 
         let fontSize = op.sizePt
         let textWidthPt = font.widthOfTextAtSize(op.text, fontSize)
@@ -440,7 +487,7 @@ export async function exportSidePng(
   }
 
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
-  if (!blob) return
+  if (!blob) throw new Error('Failed to render PNG blob')
   const safeName = (data.nameKo.trim() || data.nameEn.trim() || 'SKKU').replace(/\s+/g, '_')
   triggerDownload(blob, `SKKU_명함_${safeName}_${side === 'front' ? '앞면' : '뒷면'}_600dpi.png`)
 }
@@ -450,8 +497,9 @@ function triggerDownload(blob: Blob, filename: string): void {
   const a = document.createElement('a')
   a.href = url
   a.download = filename
+  a.rel = 'noopener'
   document.body.appendChild(a)
   a.click()
   a.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 5000)
+  setTimeout(() => URL.revokeObjectURL(url), 60000)
 }

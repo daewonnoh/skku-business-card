@@ -68,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
             <input
               ref={fileRef}
               type="file"
-              accept="application/json"
+              accept=".json,application/json,text/plain"
               style={{ display: 'none' }}
               onChange={(e) => {
                 const file = e.target.files?.[0]

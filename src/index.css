@@ -840,3 +840,120 @@ body {
   align-items: center;
   gap: 0.5rem;
 }
+
+@media (max-width: 768px) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  .skku-header {
+    position: static;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .btn-header {
+    justify-content: center;
+    min-height: 40px;
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.35);
+    font-weight: 600;
+  }
+
+  .preset-group {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+    scrollbar-width: none;
+  }
+
+  .preset-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .preset-label,
+  .preset-pill {
+    flex-shrink: 0;
+  }
+
+  .preset-pill {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .anchor-nav {
+    position: sticky;
+    top: 0;
+    z-index: 35;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    border-radius: 10px;
+    padding: 0.5rem;
+    gap: 0.4rem;
+  }
+
+  .anchor-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .anchor-link {
+    flex-shrink: 0;
+    white-space: nowrap;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    background: #f4f7fb;
+    border: 1px solid var(--border-subtle);
+    color: var(--skku-blue);
+  }
+
+  .form-section {
+    scroll-margin-top: 64px;
+    padding: 1rem;
+  }
+
+  .input,
+  .select,
+  .textarea {
+    font-size: 16px;
+    min-height: 44px;
+    color: var(--text-primary);
+  }
+
+  .seg-btn {
+    min-height: 40px;
+    line-height: 1.3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-outline {
+    min-height: 44px;
+  }
+
+  .btn-small {
+    min-height: 36px;
+  }
+
+  .toast {
+    left: 1rem;
+    right: 1rem;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    justify-content: center;
+    text-align: center;
+  }
+}
