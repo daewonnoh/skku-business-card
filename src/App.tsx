@@ -31,6 +31,7 @@ export const App: React.FC = () => {
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [mobileTab, setMobileTab] = useState<'edit' | 'preview'>('edit')
 
   useEffect(() => {
     try {
@@ -168,18 +169,41 @@ export const App: React.FC = () => {
         onImportJson={handleImportJson}
       />
 
-      <main className="workspace">
-        <EditorForm
-          data={data}
-          uiLang={uiLang}
-          customFonts={customFonts}
-          photoDataUrl={photoDataUrl}
-          onChange={handlePatch}
-          onUploadCustomFont={handleUploadCustomFont}
-          onClearCustomFont={handleClearCustomFont}
-          onUploadPhoto={handleUploadPhoto}
-          onClearPhoto={handleClearPhoto}
-        />
+      <div className="mobile-tab-bar" role="tablist" aria-label="Mobile view switcher">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileTab === 'edit'}
+          className={`mobile-tab-btn ${mobileTab === 'edit' ? 'active' : ''}`}
+          onClick={() => setMobileTab('edit')}
+        >
+          {uiLang === 'ko' ? '디자인 · 정보 입력' : 'Edit & Design'}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileTab === 'preview'}
+          className={`mobile-tab-btn ${mobileTab === 'preview' ? 'active' : ''}`}
+          onClick={() => setMobileTab('preview')}
+        >
+          {uiLang === 'ko' ? '미리보기 · 다운로드' : 'Preview & Export'}
+        </button>
+      </div>
+
+      <main className="workspace" data-mobile-tab={mobileTab}>
+        <div className="editor-column">
+          <EditorForm
+            data={data}
+            uiLang={uiLang}
+            customFonts={customFonts}
+            photoDataUrl={photoDataUrl}
+            onChange={handlePatch}
+            onUploadCustomFont={handleUploadCustomFont}
+            onClearCustomFont={handleClearCustomFont}
+            onUploadPhoto={handleUploadPhoto}
+            onClearPhoto={handleClearPhoto}
+          />
+        </div>
 
         <PreviewPanel
           data={data}
